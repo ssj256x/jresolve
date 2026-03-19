@@ -6,15 +6,7 @@ from result import Ok, Err, Result
 import jq
 
 from jresolve import JqModel, Jq, JqMode, Computed, Transform
-
-
-def unwrap(result: Result):
-    match result:
-        case Ok(value):
-            print("Success: ", value.model_dump_json(indent=2))
-        case Err(error):
-            print("Error: ")
-            pprint.pprint(error)
+from jresolve.core.types import ResolutionMode
 
 
 def transform_geo(data):
@@ -92,12 +84,12 @@ class UserDetailsConcise(JqModel):
 
     primary_city: Annotated[
         Optional[str],
-        Jq(".profile.addresses[] | select(.primary == true) | .location.city")
+        Jq(".profile.addresses[] | select(.primary == true) | .location.cit")
     ]
 
     premium_price: Annotated[
         Optional[float],
-        Jq(".subscriptions[] | select(.plan == \"PREMIUM\") | .billing.price")
+        Jq(".subscriptions[] | select(.plan == \"PREMIUM\") | .billing.pric")
     ]
 
     audit: Audit
@@ -107,5 +99,14 @@ class UserDetailsConcise(JqModel):
 
 with open('user.json') as f:
     users = json.loads(f.read())
-    u = UserDetailsConcise.from_json(users)
-    unwrap(u)
+    result = UserDetailsConcise.from_json(users, mode=ResolutionMode.PARTIAL)
+
+    if result.is_success:
+        print("✅ Full success:", result.value)
+
+    elif result.is_partial:
+        print("⚠️ Partial success:", result.value)
+        print("Errors:", result.errors)
+
+    elif result.is_failure:
+        print("❌ Failure:", result)

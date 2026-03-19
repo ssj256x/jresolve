@@ -1,6 +1,5 @@
 import json
 
-from result import Ok, Err, Result
 from typing import Annotated
 from jresolve import (
     JqModel,
@@ -9,7 +8,6 @@ from jresolve import (
     Computed,
     JqMode
 )
-from jresolve.exceptions import ResolutionError
 
 
 class OrderSummary(JqModel):
@@ -48,10 +46,6 @@ class OrderSummary(JqModel):
 # Execute the resolution
 with open('orders.json') as f:
     data = json.loads(f.read())
-    result: Result[dict, ResolutionError] = OrderSummary.from_json(data)
+    result = OrderSummary.from_json(data)
 
-    match result:
-        case Ok(value):
-            print("Success: ", value.model_dump_json(indent=2))
-        case Err(error):
-            print("Error: \n", error)
+    print(result)
